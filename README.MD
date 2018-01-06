@@ -35,6 +35,11 @@ More info: https://github.com/OpenZWave/node-openzwave-shared/blob/master/README
 ### Ubuntu
 
 More info: https://github.com/OpenZWave/node-openzwave-shared/blob/master/README-ubuntu.md
+
+## Installation
+```sh
+$ ./domusto.js plugin install basvdijk/domusto-zwave
+```
  
 ## Configuration
 

@@ -189,6 +189,8 @@ class DomustoZWave extends DomustoPlugin {
 
     }
 
+    onSignalReceivedForPlugin(signal: Domusto.Signal) {}
+
     _enablePairingMode() {
         // Add a new device to the ZWave controller
         if (this.zwave.hasOwnProperty('beginControllerCommand')) {
