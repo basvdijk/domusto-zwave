@@ -1,4 +1,3 @@
-import util from '../../util';
 import config from '../../config';
 
 // DOMUSTO
@@ -50,18 +49,18 @@ class DomustoZWave extends DomustoPlugin {
         try {
 
             this.zwave.on('driver ready', (homeid) => {
-                console.log('scanning homeid=0x%s...', homeid.toString(16));
+                this.console.log('scanning homeid=0x%s...', homeid.toString(16));
             });
 
             this.zwave.on('driver failed', () => {
-                console.log('failed to start driver');
+                this.console.log('failed to start driver');
                 this.zwave.disconnect();
                 process.exit();
             });
 
             this.zwave.on('node added', (nodeid) => {
 
-                console.log('NODE ADDED NODEID:', nodeid);
+                this.console.log('NODE ADDED NODEID:', nodeid);
 
                 this.nodes['node-' + nodeid] = {
                     manufacturer: '',
@@ -85,7 +84,7 @@ class DomustoZWave extends DomustoPlugin {
 
             this.zwave.on('value changed', (nodeid, comclass, value) => {
                 if (this.nodes['node-' + nodeid]['ready']) {
-                    console.log('node%d: changed: %d:%s:%s->%s', nodeid, comclass,
+                    this.console.log('node%d: changed: %d:%s:%s->%s', nodeid, comclass,
                         value['label'],
                         this.nodes['node-' + nodeid]['classes'][comclass][value.index]['value'],
                         value['value']);
@@ -109,18 +108,18 @@ class DomustoZWave extends DomustoPlugin {
                 this.nodes['node-' + nodeid]['name'] = nodeinfo.name;
                 this.nodes['node-' + nodeid]['loc'] = nodeinfo.loc;
                 this.nodes['node-' + nodeid]['ready'] = true;
-                console.log('node%d: %s, %s', nodeid,
+                this.console.log('node%d: %s, %s', nodeid,
                     nodeinfo.manufacturer ? nodeinfo.manufacturer
                         : 'id=' + nodeinfo.manufacturerid,
                     nodeinfo.product ? nodeinfo.product
                         : 'product=' + nodeinfo.productid +
                         ', type=' + nodeinfo.producttype);
-                console.log('node%d: name="%s", type="%s", location="%s"', nodeid,
+                this.console.log('node%d: name="%s", type="%s", location="%s"', nodeid,
                     nodeinfo.name,
                     nodeinfo.type,
                     nodeinfo.loc);
                 for (let comclass in this.nodes['node-' + nodeid]['classes']) {
-                    console.log('node%d: class %d', nodeid, comclass);
+                    this.console.log('node%d: class %d', nodeid, comclass);
                     switch (comclass) {
                         case '0x25': // COMMAND_CLASS_SWITCH_BINARY
                         case '0x26': // COMMAND_CLASS_SWITCH_MULTILEVEL
@@ -129,7 +128,7 @@ class DomustoZWave extends DomustoPlugin {
                                 this.zwave.enablePoll(valueId);
                                 break;
                             }
-                            // console.log('node%d:   %s=%s', nodeid, values[idx]['label'], values[idx]['value']);
+                            // this.console.log('node%d:   %s=%s', nodeid, values[idx]['label'], values[idx]['value']);
                     }
                 }
             });
@@ -137,45 +136,45 @@ class DomustoZWave extends DomustoPlugin {
             this.zwave.on('notification', (nodeid, notif) => {
                 switch (notif) {
                     case 0:
-                        console.log('node%d: message complete', nodeid);
+                        this.console.log('node%d: message complete', nodeid);
                         break;
                     case 1:
-                        console.log('node%d: timeout', nodeid);
+                        this.console.log('node%d: timeout', nodeid);
                         break;
                     case 2:
-                        console.log('node%d: nop', nodeid);
+                        this.console.log('node%d: nop', nodeid);
                         break;
                     case 3:
-                        console.log('node%d: node awake', nodeid);
+                        this.console.log('node%d: node awake', nodeid);
                         break;
                     case 4:
-                        console.log('node%d: node sleep', nodeid);
+                        this.console.log('node%d: node sleep', nodeid);
                         break;
                     case 5:
-                        console.log('node%d: node dead', nodeid);
+                        this.console.log('node%d: node dead', nodeid);
                         break;
                     case 6:
-                        console.log('node%d: node alive', nodeid);
+                        this.console.log('node%d: node alive', nodeid);
                         break;
                 }
             });
 
             this.zwave.on('scan complete', () => {
 
-                console.log('Scan complete');
+                this.console.log('Scan complete');
                 // set dimmer node 5 to 50%
                 // this.zwave.setValue(5,38,1,0,50);
                 // this.zwave.setValue( {node_id:5, class_id: 38, instance:1, index:0}, 50);
 
                 if (pluginConfiguration.settings.pairingMode) {
-                    util.log('Paring mode active');
+                    this.console.log('Paring mode active');
                     this._enablePairingMode();
                 }
 
             });
 
             this.zwave.on('controller command', (r, s) => {
-                console.log('controller commmand feedback: r=%d, s=%d', r, s);
+                this.console.log('controller commmand feedback: r=%d, s=%d', r, s);
             });
 
 
@@ -184,7 +183,7 @@ class DomustoZWave extends DomustoPlugin {
             this.zwave.connect(pluginConfiguration.settings.port);
 
         } catch (error) {
-            util.log('Initialisation of RfxCom plugin failed', error);
+            this.console.log('Initialisation of RfxCom plugin failed', error);
         }
 
     }
