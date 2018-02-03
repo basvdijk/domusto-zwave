@@ -7,6 +7,10 @@ category:  radio
 version:   0.0.1
 website:   http://domusto.com
 ```
+## Features
+- [X] Pair devices
+- [ ] Emit device events
+- [ ] Read device values / state
 
 ## Hardware needed
 - Vision Z-Wave Plus USB Stick ZU1401EU - € 29.95
