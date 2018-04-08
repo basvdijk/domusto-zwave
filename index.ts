@@ -10,6 +10,7 @@ import ZWaveCommandClasses from './zwave-command-classes';
 
 // PLUGIN SPECIFIC
 import * as ZWave from 'openzwave-shared';
+import DomustoSocketIO from '../../domusto/DomustoSocketIO';
 
 // http://wiki.micasaverde.com/index.php/ZWave_Command_Classes
 // [ZWAVE] node%d: %s, %s 8 Unknown: id=0258 Unknown: type=0003, id=1082
@@ -36,6 +37,8 @@ class DomustoZWave extends DomustoPlugin {
     private attachedInputDeviceIds = [];
     private nodes = {};
     private zwave;
+    private inclusionMode = false;
+    private exclusionMode = false;
 
     /**
      * Creates an instance of Domustothis.zwave.
@@ -148,6 +151,9 @@ class DomustoZWave extends DomustoPlugin {
                 }
                 this.nodes['node-' + nodeId]['classes'][comclass][valueId.index] = valueId;
 
+                DomustoSocketIO.emit('pluginZWave', { type: 'newDevice', deviceId: nodeId, device: this.nodes['node-' + nodeId]});
+
+
                 // if (ZWaveCommandClasses.getClassByDecId(comclass).name === 'COMMAND_CLASS_SENSOR_BINARY') {
 
                 //     console.log(value.value_id);
@@ -168,15 +174,19 @@ class DomustoZWave extends DomustoPlugin {
 
                 this.console.log(`>> node${nodeId} value changed`);
 
+                let commClassString = ZWaveCommandClasses.getClassByDecId(comclass).name;
+
+                this.logToFile(`Node ${nodeId} - (${comclass}) ${commClassString} ${value.label} - value: ${value['value']} - ${JSON.stringify(value)}`);
+
                 if (this.nodes['node-' + nodeId]['ready']) {
                     this.console.log(`   node${nodeId}: changed: ${comclass}:${value['label']}:${this.nodes['node-' + nodeId]['classes'][comclass][value.index]['value']}->${value['value']}`);
                 }
                 this.nodes['node-' + nodeId]['classes'][comclass][value.index] = value;
 
-                console.log(ZWaveCommandClasses.getClassByDecId(comclass).name);
+                console.log(commClassString);
 
                 // Binary Sensor Command Class COMMAND_CLASS_SENSOR_BINARY
-                if (ZWaveCommandClasses.getClassByDecId(comclass).name === 'COMMAND_CLASS_SENSOR_BINARY') {
+                if (commClassString === 'COMMAND_CLASS_SENSOR_BINARY') {
 
                     console.log(value.value_id);
 
@@ -185,10 +195,13 @@ class DomustoZWave extends DomustoPlugin {
                         state: value.value ? 'on' : 'off'
                     });
 
-                    // }, Domusto.SignalSender.client);
-
                 }
 
+                if (commClassString === 'COMMAND_CLASS_BATTERY') {
+                    this.broadcastSignal(value.value_id, {
+                        battery: value.value
+                    });
+                }
 
             });
 
@@ -305,6 +318,9 @@ class DomustoZWave extends DomustoPlugin {
             // set this to 'true' for secure devices eg. door locks
             console.log('add');
             this.zwave.addNode(true);
+
+            this.inclusionMode = true;
+            this.exclusionMode = false;
         }
     }
 
@@ -316,8 +332,20 @@ class DomustoZWave extends DomustoPlugin {
         } else {
             // using new security API
             // set this to 'true' for secure devices eg. door locks
+            console.log('remove');
             this.zwave.removeNode(true);
+
+            this.inclusionMode = false;
+            this.exclusionMode = true;
         }
+    }
+
+    cancelControllerCommand() {
+
+        this.zwave.cancelControllerCommand();
+
+        this.inclusionMode = false;
+        this.exclusionMode = false;
     }
 
 }

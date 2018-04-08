@@ -18,9 +18,7 @@ class DomustoZWaveApi extends DomustoPluginApi {
             this.pluginInstance.enableAddNode();
 
             response.json({
-                command: 'Node add mode enabled',
-                success: true,
-                output: true
+                message: 'Node add mode enabled',
             });
 
         });
@@ -31,9 +29,7 @@ class DomustoZWaveApi extends DomustoPluginApi {
             this.pluginInstance.enableRemoveNode();
 
             response.json({
-                command: 'Node remove mode enabled',
-                success: true,
-                output: true
+                message: 'Node remove mode enabled',
             });
 
         });
@@ -52,6 +48,17 @@ class DomustoZWaveApi extends DomustoPluginApi {
             } else {
                 response.status(500).json({ error: `a node with nodeId ${request.params.nodeId} could not be found` });
             }
+
+        });
+
+        // executes command specified
+        this.addApiRouteGet('nodes/cancel-controller-command', (request, response) => {
+
+            this.pluginInstance.cancelControllerCommand();
+
+            response.json({
+                message: 'Controller command cancelled, resuming normal operation',
+            });
 
         });
 
